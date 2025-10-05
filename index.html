@@ -1,21 +1,3 @@
-<!-- TOM BOSH SYSTEM｜FX収益シミュレーター（Lightning対策：完全1カラム＋見切れ防止・仕様維持）
-     追加：管理料固定（料率無効・毎月 管理料上限 をそのまま徴収） -->
-<div id="tbs-embed-wrap">
-  <style>
-    :where(.entry-content, .entry-body, .site-content, .l-content, .container, .row, .wp-block-html){
-      overflow: visible !important;
-    }
-    #tbs-embed-wrap{ width:100%; max-width:100%; }
-    #tbs-iframe{ width:100%; max-width:100%; border:0; display:block; background:transparent; }
-  </style>
-
-  <iframe id="tbs-iframe" title="ARBI TRADE 収益シミュレーター" scrolling="no"></iframe>
-
-  <script>
-    (function(){
-      var iframe = document.getElementById('tbs-iframe');
-
-      var innerHTML = `
 <!doctype html>
 <html lang="ja">
 <head>
@@ -25,14 +7,15 @@
 <style>
   :root{
     --bg:#fff; --text:#0f172a; --muted:#64748b; --card:#fff; --line:#e2e8f0; --kpi:#fafafa;
-    --gross:#0ea5e9; --fee:#f59e0b; --net:#10b981; --linechart:#ef4444;
+    --gross:#0ea5e9; --fee:#f59e0b; --net:#10b981; --linechart:#ef4444; --axis:#cbd5e1;
   }
   html.theme-dark{
     --bg:#0b0f19; --text:#e5e7eb; --muted:#94a3b8; --card:#111827; --line:#1f2937; --kpi:#0f172a;
-    --gross:#38bdf8; --fee:#fbbf24; --net:#34d399; --linechart:#f87171;
+    --gross:#38bdf8; --fee:#fbbf24; --net:#34d399; --linechart:#f87171; --axis:#334155;
   }
   html,body{ margin:0; padding:0; background:var(--bg); color:var(--text); overflow-x:hidden; }
   *{ box-sizing:border-box; max-width:100%; min-width:0; word-break:break-word; }
+
   #fxsim{
     width:100%; max-width:880px; margin:24px auto;
     padding-left:clamp(10px,4vw,20px); padding-right:clamp(10px,4vw,20px); padding-bottom:16px;
@@ -44,6 +27,7 @@
       padding-right:max(clamp(10px,4vw,20px), env(safe-area-inset-right));
     }
   }
+
   h1{ font-size:18px; margin:0 0 12px; }
 
   .grid{ display:grid; grid-template-columns:1fr; gap:12px; }
@@ -54,14 +38,16 @@
   .toggle-btn{ border:1px solid #0ea5e9; background:transparent; color:#0ea5e9; border-radius:999px; padding:6px 10px; font-size:12px; cursor:pointer; }
 
   label{ font-size:12px; color:var(--muted); display:block; margin:0 0 6px; }
-  input[type="number"], select{ width:100%; border:1px solid #cbd5e1; border-radius:10px; padding:10px 12px; font-size:14px; background:#fff; color:#111; }
+  input[type="number"], select{
+    width:100%; border:1px solid #cbd5e1; border-radius:10px; padding:10px 12px; font-size:14px; background:#fff; color:#111;
+  }
   html.theme-dark input[type="number"], html.theme-dark select{ background:#0f172a; color:#e5e7eb; border-color:#334155; }
 
-  /* スマホは1列、PCは2列 */
+  /* パラメータ：スマホ1列／PCで2列 */
   .row{ display:grid; grid-template-columns:1fr; gap:10px; margin-bottom:10px; }
   @media (min-width: 720px){
-    #paramsBody .row{ grid-template-columns: repeat(2, minmax(0,1fr)); }
-    #paramsBody .row > div{ min-width:0; }
+    #paramsBody .row{ grid-template-columns:repeat(2,minmax(0,1fr)); }
+    #paramsBody .row>div{ min-width:0; }
   }
 
   .actions{ display:flex; gap:8px; flex-wrap:wrap; }
@@ -148,7 +134,7 @@
               <input id="months" type="number" inputmode="numeric" min="1" max="36" step="1" value="12">
             </div>
             <div>
-              <!-- ★ 管理料率 + 管理料固定 -->
+              <!-- 管理料率 + 管理料固定 -->
               <label style="display:flex; align-items:center; justify-content:space-between; gap:8px;">
                 <span>管理料率（%）</span>
                 <span style="display:inline-flex; align-items:center; gap:6px; font-weight:normal;">
@@ -166,18 +152,18 @@
               <input id="feeCap" type="number" inputmode="numeric" min="0" step="100" value="33000">
             </div>
           </div>
- <div class="opt-row">
-              <input id="modePrincipal" type="checkbox">
-              <label for="modePrincipal" style="margin:0;">元本回収モード（<strong>初期証拠金×2 回収後に初期証拠金へリセット</strong>）</label>
-            </div>
+
+          <div class="opt-row" style="margin-top:6px;">
+            <input id="modePrincipal" type="checkbox">
+            <label for="modePrincipal" style="margin:0;">元本回収モード（<strong>初回のみ：初期証拠金×2 回収で初期証拠金へリセット</strong>）</label>
+          </div>
+
           <div class="actions" style="margin-top:6px;">
             <button id="run">計算する</button>
             <button id="reset" class="secondary" type="button">入力リセット</button>
             <button id="downloadCsv" class="secondary" type="button">CSVダウンロード</button>
           </div>
-          <p class="muted" style="margin-top:6px;">
-            入力値は自動保存され、次回開いたときに復元されます。
-          </p>
+          <p class="muted" style="margin-top:6px;">入力値は自動保存され、次回開いたときに復元されます。</p>
         </div>
       </div>
 
@@ -267,277 +253,282 @@
         </div>
       </div>
     </div>
+  </div>
+
+<script>
+(function(){
+  const $ = (id)=>document.getElementById(id);
+  const JPY = (n)=> (n===null||n===undefined) ? "-" : n.toLocaleString("ja-JP",{style:"currency",currency:"JPY",maximumFractionDigits:0});
+  const INT = (n)=> (n===null||n===undefined) ? "-" : n.toLocaleString("ja-JP");
+  const LSKEY="tbs_fx_sim_v1", UIKEY="tbs_fx_ui_v1", PREKEY="tbs_fx_presets_v1";
+
+  const els = {
+    initial: $("initial"), cap: $("cap"), bonusPct: $("bonusPct"),
+    tradesPerMonth: $("tradesPerMonth"), tpPct: $("tpPct"),
+    reinvestPct: $("reinvestPct"), months: $("months"),
+    feePct: $("feePct"), feeCap: $("feeCap"), feeFixed: $("feeFixed"),
+    modePrincipal: $("modePrincipal"), autoRecalc: $("autoRecalc"),
+    themeMode: $("themeMode"),
+    run: $("run"), reset: $("reset"), downloadCsv: $("downloadCsv"),
+    sumBody: $("sumBody"), detailBlocks: $("detailBlocks"),
+    kpiFinalMargin: $("kpiFinalMargin"), kpiGross: $("kpiGross"),
+    kpiFees: $("kpiFees"), kpiNet: $("kpiNet"), kpiRecovery: $("kpiRecovery"),
+    totGross: $("totGross"), totFees: $("totFees"), totNet: $("totNet"), totFinal: $("totFinal"),
+    chartMonthly: $("chartMonthly"),
+    paramToggle: $("paramToggle"), paramsBody: $("paramsBody"),
+    optToggle: $("optToggle"), optsBody: $("optsBody"),
+    presetSlot:$("presetSlot"), presetSave:$("presetSave"), presetLoad:$("presetLoad"), presetDelete:$("presetDelete"),
+    presetMsg:$("presetMsg"), detailsPanel:$("detailsPanel")
+  };
+
+  /* 折りたたみ */
+  function setCollapsed(b){
+    els.paramsBody.style.display = b ? "none":"block";
+    els.paramToggle.setAttribute("aria-expanded", b ? "false":"true");
+    els.paramToggle.textContent = b ? "開く":"折りたたむ";
+    try{ const u=JSON.parse(localStorage.getItem(UIKEY)||"{}"); u.paramCollapsed=!!b; localStorage.setItem(UIKEY,JSON.stringify(u)); }catch(e){}
+  }
+  els.paramToggle.addEventListener("click", ()=>setCollapsed(els.paramsBody.style.display!=="none"));
+
+  function setOptCollapsed(b){
+    els.optsBody.style.display = b ? "none":"block";
+    els.optToggle.setAttribute("aria-expanded", b ? "false":"true");
+    els.optToggle.textContent = b ? "開く":"折りたたむ";
+    try{ const u=JSON.parse(localStorage.getItem(UIKEY)||"{}"); u.optsCollapsed=!!b; localStorage.setItem(UIKEY,JSON.stringify(u)); }catch(e){}
+  }
+  els.optToggle.addEventListener("click", ()=>setOptCollapsed(els.optsBody.style.display!=="none"));
+
+  (function restoreUI(){
+    try{
+      const u=JSON.parse(localStorage.getItem(UIKEY)||"{}");
+      setCollapsed(!!u.paramCollapsed);
+      setOptCollapsed(!!u.optsCollapsed);
+    }catch(e){ setCollapsed(false); setOptCollapsed(false); }
+  })();
+
+  /* 値の保存/復元 */
+  function save(){
+    const d={
+      initial:els.initial.value, cap:els.cap.value, bonusPct:els.bonusPct.value,
+      tradesPerMonth:els.tradesPerMonth.value, tpPct:els.tpPct.value,
+      reinvestPct:els.reinvestPct.value, months:els.months.value,
+      feePct:els.feePct.value, feeCap:els.feeCap.value, feeFixed: els.feeFixed.checked?"1":"0",
+      modePrincipal: els.modePrincipal.checked?"1":"0",
+      autoRecalc:   els.autoRecalc.checked?"1":"0",
+      themeMode:    els.themeMode.value||"auto"
+    };
+    localStorage.setItem(LSKEY, JSON.stringify(d));
+  }
+  function restore(){
+    const raw=localStorage.getItem(LSKEY); if(!raw) return;
+    try{
+      const d=JSON.parse(raw);
+      Object.keys(d).forEach(k=>{
+        if(k==="modePrincipal") els.modePrincipal.checked = d[k]==="1";
+        else if(k==="autoRecalc") els.autoRecalc.checked = d[k]==="1";
+        else if(k==="feeFixed")  els.feeFixed.checked   = d[k]==="1";
+        else if(els[k] && "value" in els[k]) els[k].value = d[k];
+      });
+    }catch(e){}
+  }
+  function bind(id){
+    const el=$(id); if(!el) return;
+    el.addEventListener("input", ()=>{ save(); if(els.autoRecalc.checked) calc(); });
+    el.addEventListener("change",()=>{ save(); if(els.autoRecalc.checked) calc(); });
+  }
+  ["initial","cap","bonusPct","tradesPerMonth","tpPct","reinvestPct","months","feePct","feeCap","feeFixed","modePrincipal","autoRecalc","themeMode"].forEach(bind);
+
+  /* テーマ */
+  function applyTheme(mode){ document.documentElement.classList.toggle("theme-dark", mode==="dark"); drawChart(lastRows||[]); }
+  els.themeMode.addEventListener("change", ()=>applyTheme(els.themeMode.value||"auto"));
+
+  /* feeFixed UI：チェック時は料率セレクトを薄く */
+  function updateFeeLockUI(){
+    const on = els.feeFixed && els.feeFixed.checked;
+    els.feePct.disabled = !!on;
+    els.feePct.style.opacity = on ? 0.6 : 1;
+  }
+  if(els.feeFixed){ els.feeFixed.addEventListener("change", updateFeeLockUI); }
+
+  /* チャート描画（バー：gross/fee/net、折れ線：期末証拠金 右軸） */
+  function cssVar(n){ return getComputedStyle(document.documentElement).getPropertyValue(n).trim(); }
+  function drawChart(rows){
+    const cvs=els.chartMonthly, ctx=cvs.getContext("2d"), dpr=window.devicePixelRatio||1;
+    const W=cvs.clientWidth||600, H=260; cvs.width=W*dpr; cvs.height=H*dpr; ctx.setTransform(dpr,0,0,dpr,0,0);
+    ctx.clearRect(0,0,W,H);
+    const padL=48,padR=64,padT=14,padB=28, plotW=W-padL-padR, plotH=H-padT-padB;
+    const n=rows.length, labels=rows.map(r=>r.m), gross=rows.map(r=>r.monthGross), fees=rows.map(r=>r.fee), net=rows.map(r=>r.net), endM=rows.map(r=>r.endMargin);
+    const maxBar=Math.max(1,...gross,...fees,...net), maxLine=Math.max(1,...endM);
+    function yB(v){ return padT+plotH-(v/maxBar)*plotH; } function yL(v){ return padT+plotH-(v/maxLine)*plotH; }
+
+    // 軸
+    ctx.strokeStyle=cssVar("--axis")||"#cbd5e1"; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(padL,padT); ctx.lineTo(padL,padT+plotH); ctx.lineTo(padL+plotW,padT+plotH); ctx.stroke();
+
+    // 目盛（左：バー）
+    ctx.fillStyle=cssVar("--muted")||"#64748b"; ctx.font="11px system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial"; ctx.textAlign="right"; ctx.textBaseline="middle";
+    [0,0.5,1].forEach(p=>{ const y=padT+plotH-p*plotH; const v=Math.round(maxBar*p); ctx.fillText(v.toLocaleString("ja-JP"), padL-6, y); });
+
+    // 目盛（右：折れ線＝期末証拠金）
+    ctx.textAlign="left";
+    [0,0.5,1].forEach(p=>{ const y=padT+plotH-p*plotH; const v=Math.round(maxLine*p); ctx.fillText(v.toLocaleString("ja-JP"), padL+plotW+6, y); });
+
+    // バー
+    const band=plotW/Math.max(1,n), barW=Math.max(2, Math.min(18, band*0.22)), gap=barW*0.35;
+    for(let i=0;i<n;i++){
+      const cx=padL+band*i+band*0.5, y0=yB(0);
+      ctx.fillStyle=cssVar("--gross")||"#0ea5e9"; let y1=yB(gross[i]); ctx.fillRect(cx-(barW*1.1+gap), y1, barW, y0-y1);
+      ctx.fillStyle=cssVar("--fee")||"#f59e0b";   let y2=yB(fees[i]);  ctx.fillRect(cx-(barW*0+0),     y2, barW, y0-y2);
+      ctx.fillStyle=cssVar("--net")||"#10b981";   let y3=yB(net[i]);   ctx.fillRect(cx+(barW*1.1+gap), y3, barW, y0-y3);
+    }
+
+    // 折れ線（期末証拠金）
+    ctx.strokeStyle=cssVar("--linechart")||"#ef4444"; ctx.lineWidth=2; ctx.beginPath();
+    for(let i=0;i<n;i++){ const x=padL+band*i+band*0.5, y=yL(endM[i]); if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y); } ctx.stroke();
+
+    // Xラベル
+    ctx.fillStyle=cssVar("--muted")||"#64748b"; ctx.textAlign="center"; ctx.textBaseline="top";
+    for(let i=0;i<n;i++){ const x=padL+band*i+band*0.5; ctx.fillText(labels[i]+"月", x, padT+plotH+6); }
+  }
+
+  /* 計算（初回のみ元本回収：現行仕様維持） */
+  let lastRows=[];
+  function calc(){
+    const initial=+els.initial.value||0, cap=+els.cap.value||0;
+    const bonusPct=(+els.bonusPct.value||0)/100, tpPct=(+els.tpPct.value||0)/100, reinvest=(+els.reinvestPct.value||0)/100;
+    const trades=Math.max(1,+els.tradesPerMonth.value||1), months=Math.max(1,+els.months.value||1);
+    const feePct=(+els.feePct.value||0)/100, feeCap=+els.feeCap.value||0, feeFixed = !!(els.feeFixed && els.feeFixed.checked);
+    const principalMode=!!els.modePrincipal.checked, principalTarget= initial>0 ? initial*2 : Infinity;
+
+    let margin=initial|0, totalGross=0,totalFees=0,totalNet=0, recovered=0, didReset=false, resetMonth=null;
+    const monthRows=[], detailHTML=[];
+    for(let m=1;m<=months;m++){
+      const startMargin=margin; let monthGross=0; const rows=[];
+      for(let t=1;t<=trades;t++){
+        const before=margin, bonus=Math.round(before*bonusPct), effective=before+bonus;
+        const profit=Math.round(bonus*tpPct), add=Math.floor(profit*reinvest);
+        margin=Math.min(cap>0?cap:Infinity, margin+add);
+        monthGross+=profit;
+        rows.push('<tr><td>'+t+'</td><td>'+JPY(before)+'</td><td>'+Math.round(bonusPct*100)+'%</td><td>'+JPY(bonus)+'</td><td>'+JPY(effective)+'</td><td>'+JPY(profit)+'</td><td>'+JPY(add)+'</td><td>'+JPY(margin)+'</td></tr>');
+        // ★回収判定：現行ロジック維持（粗利益ベース）
+        if(principalMode && !didReset){
+          recovered+=profit;
+          if(initial>0 && recovered>=principalTarget){
+            didReset=true; resetMonth=m; recovered=0; margin=Math.min(cap>0?cap:Infinity, initial|0);
+            rows.push('<tr class="reset-row" id="resetAnchor"><td colspan="8">★ 元本回収達成 '+ JPY(principalTarget) +' → 初期証拠金 '+ JPY(initial) +' に戻して再スタート</td></tr>');
+          }
+        }
+      }
+      // 管理料：固定ONなら毎月 feeCap、OFFは従来式（min(月利益×率, 上限)）
+      const fee = feeFixed ? feeCap : Math.min(feeCap>0?feeCap:Infinity, Math.round(monthGross*feePct));
+      const net=monthGross-fee; totalGross+=monthGross; totalFees+=fee; totalNet+=net;
+      monthRows.push({m, startMargin, trades, monthGross, fee, net, endMargin:margin});
+      detailHTML.push('<div class="card" style="margin-top:8px;"><div class="hd">'+m+'ヶ月目：利確内訳</div><div class="bd"><div class="tablewrap"><table><thead><tr><th>回</th><th>証拠金</th><th>ボーナス割合</th><th>ボーナス</th><th>有効証拠金</th><th>利確金額</th><th>再投資額</th><th>次回証拠金</th></tr></thead><tbody>'+rows.join("")+'</tbody></table></div></div></div>');
+    }
+
+    // テーブル・KPI
+    els.sumBody.innerHTML = monthRows.map(r=>'<tr><td>'+r.m+'</td><td>'+JPY(r.startMargin)+'</td><td>'+INT(r.trades)+'</td><td>'+JPY(r.monthGross)+'</td><td>'+JPY(r.fee)+'</td><td>'+JPY(r.net)+'</td><td>'+JPY(r.endMargin)+'</td></tr>').join('');
+    els.detailBlocks.innerHTML = detailHTML.join('');
+    els.kpiFinalMargin.textContent = JPY(monthRows.length?monthRows[monthRows.length-1].endMargin:0);
+    els.kpiGross.textContent = JPY(totalGross); els.kpiFees.textContent = JPY(totalFees); els.kpiNet.textContent = JPY(totalNet);
+    if(!principalMode){ els.kpiRecovery.textContent="モードOFF"; els.kpiRecovery.classList.remove("clickable"); els.kpiRecovery.removeAttribute("title"); }
+    else if(didReset){ els.kpiRecovery.textContent=resetMonth+"ヶ月目"; els.kpiRecovery.classList.add("clickable"); els.kpiRecovery.title="タップで回収行へ移動"; }
+    else{ els.kpiRecovery.textContent="未達成"; els.kpiRecovery.classList.remove("clickable"); els.kpiRecovery.removeAttribute("title"); }
+
+    els.totGross.textContent=JPY(totalGross); els.totFees.textContent=JPY(totalFees); els.totNet.textContent=JPY(totalNet); els.totFinal.textContent=JPY(monthRows.length?monthRows[monthRows.length-1].endMargin:0);
+
+    lastRows=monthRows; drawChart(monthRows); save();
+    return { monthRows };
+  }
+
+  function toCsv(data){
+    const lines=[["月","期首証拠金","月間利確回数","月粗利益","管理料","月ユーザー利益","期末証拠金"]];
+    data.monthRows.forEach(r=>lines.push([r.m,r.startMargin,r.trades,r.monthGross,r.fee,r.net,r.endMargin]));
+    return "\uFEFF"+lines.map(r=>r.join(",")).join("\n");
+  }
+
+  // KPIクリックで回収行へスクロール
+  $("kpiRecovery").addEventListener("click", ()=>{
+    if(!$("kpiRecovery").classList.contains("clickable")) return;
+    const det=$("detailsPanel"); if(det) det.open=true;
+    setTimeout(()=>{ const a=document.getElementById("resetAnchor"); if(a && a.scrollIntoView){ a.scrollIntoView({behavior:"smooth",block:"center"}); } },30);
+  });
+
+  /* プリセット（feeFixedも保存/読込対象） */
+  function msg(t){ if(els.presetMsg){ els.presetMsg.textContent=t||""; setTimeout(()=>{ if(els.presetMsg.textContent===t) els.presetMsg.textContent=""; },1600); } }
+  function grab(){ return {
+    initial:els.initial.value, cap:els.cap.value, bonusPct:els.bonusPct.value,
+    tradesPerMonth:els.tradesPerMonth.value, tpPct:els.tpPct.value, reinvestPct:els.reinvestPct.value,
+    months:els.months.value, feePct:els.feePct.value, feeCap:els.feeCap.value,
+    feeFixed: els.feeFixed.checked?"1":"0", modePrincipal:els.modePrincipal.checked?"1":"0"
+  }; }
+  function apply(p){ if(!p) return;
+    Object.keys(p).forEach(k=>{
+      if(k==="modePrincipal") els.modePrincipal.checked=p[k]==="1";
+      else if(k==="feeFixed")  els.feeFixed.checked=p[k]==="1";
+      else if(els[k] && "value" in els[k]) els[k].value=p[k];
+    });
+    updateFeeLockUI();
+  }
+  function allPresets(){ try{ return JSON.parse(localStorage.getItem(PREKEY)||"{}"); }catch(e){ return {}; } }
+  function savePresets(obj){ localStorage.setItem(PREKEY, JSON.stringify(obj)); }
+  function refreshChips(){
+    const all=allPresets();
+    Array.prototype.forEach.call(document.querySelectorAll("[data-quick]"), b=>{
+      const key="slot"+b.getAttribute("data-quick");
+      b.setAttribute("data-has", all[key] ? "1":"0");
+    });
+  }
+  function psave(n){ const all=allPresets(); all["slot"+n]=grab(); savePresets(all); refreshChips(); msg("スロット"+n+"に保存しました"); }
+  function pload(n){ const all=allPresets(), p=all["slot"+n]; if(!p){ msg("スロット"+n+"は空です"); return; } apply(p); save(); calc(); msg("スロット"+n+"を読込"); }
+  function pdel(n){ const all=allPresets(); const key="slot"+n; if(all[key]){ delete all[key]; savePresets(all); refreshChips(); msg("スロット"+n+"を削除しました"); } else { msg("スロット"+n+"は空です"); } }
+
+  $("presetSave").addEventListener("click", ()=>psave($("presetSlot").value));
+  $("presetLoad").addEventListener("click", ()=>pload($("presetSlot").value));
+  $("presetDelete").addEventListener("click", ()=>pdel($("presetSlot").value));
+  Array.prototype.forEach.call(document.querySelectorAll("[data-quick]"), b=>{
+    b.addEventListener("click", ()=>pload(b.getAttribute("data-quick")));
+  });
+
+  /* ボタン類 */
+  $("run").addEventListener("click", calc);
+  $("reset").addEventListener("click", ()=>{
+    if(!confirm("入力を初期値に戻しますか？")) return;
+    $("initial").value="100000"; $("cap").value="400000"; $("bonusPct").value="20"; $("tradesPerMonth").value="4";
+    $("tpPct").value="70"; $("reinvestPct").value="50"; $("months").value="12";
+    $("feePct").value="30"; $("feeCap").value="29800"; $("feeFixed").checked=false;
+    $("modePrincipal").checked=false; $("autoRecalc").checked=false;
+    const prev=JSON.parse(localStorage.getItem(LSKEY)||"{}"); const tm=prev.themeMode||"auto";
+    localStorage.setItem(LSKEY, JSON.stringify({
+      initial:"100000",cap:"400000",bonusPct:"20",tradesPerMonth:"4",tpPct:"70",reinvestPct:"50",
+      months:"12",feePct:"30",feeCap:"29800",feeFixed:"0",modePrincipal:"0",autoRecalc:"0",themeMode:tm
+    }));
+    $("sumBody").innerHTML='<tr><td colspan="7" style="text-align:center;">「計算する」を押してください</td></tr>'; $("detailBlocks").innerHTML="";
+    ["kpiFinalMargin","kpiGross","kpiFees","kpiNet","kpiRecovery","totGross","totFees","totNet","totFinal"].forEach(id=>$(id).textContent="-");
+    updateFeeLockUI(); drawChart([]);
+  });
+  $("downloadCsv").addEventListener("click", ()=>{
+    const data=calc(); const csv=toCsv(data); const blob=new Blob([csv],{type:"text/csv;charset=utf-8;"}); const url=URL.createObjectURL(blob);
+    const a=document.createElement("a"); const ts=new Date().toISOString().slice(0,19).replace(/[:T]/g,"-");
+    a.href=url; a.download='arbitrade_fx_sim_'+ts+'.csv'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+  });
+
+  /* 初期化 */
+  restore();
+  const th=(JSON.parse(localStorage.getItem(LSKEY)||"{}").themeMode)||"auto"; $("themeMode").value=th; document.documentElement.classList.toggle("theme-dark", th==="dark");
+  refreshChips();
+  updateFeeLockUI();
+  calc();
+
+  /* ===== GitHub向け：レイアウト変化に追従（ResizeObserver） ===== */
+  if('ResizeObserver' in window){
+    const ro = new ResizeObserver(()=> drawChart(lastRows||[]));
+    ro.observe(document.querySelector(".chart-wrap"));
+    ro.observe(document.getElementById("fxsim"));
+  }else{
+    window.addEventListener("resize", ()=> drawChart(lastRows||[]), {passive:true});
+  }
+})();
+</script>
 </body>
 </html>
-      `;
-
-      var doc = iframe.contentWindow.document;
-      doc.open(); doc.write(innerHTML); doc.close();
-
-      var js = `
-        (function(){
-          const $ = (id)=>document.getElementById(id);
-          const JPY = (n)=> (n===null||n===undefined) ? "-" : n.toLocaleString("ja-JP",{style:"currency",currency:"JPY",maximumFractionDigits:0});
-          const INT = (n)=> (n===null||n===undefined) ? "-" : n.toLocaleString("ja-JP");
-          const LSKEY="tbs_fx_sim_v1", UIKEY="tbs_fx_ui_v1", PREKEY="tbs_fx_presets_v1";
-
-          const els = {
-            initial: $("initial"), cap: $("cap"), bonusPct: $("bonusPct"),
-            tradesPerMonth: $("tradesPerMonth"), tpPct: $("tpPct"),
-            reinvestPct: $("reinvestPct"), months: $("months"),
-            feePct: $("feePct"), feeCap: $("feeCap"), feeFixed: $("feeFixed"),
-            modePrincipal: $("modePrincipal"), autoRecalc: $("autoRecalc"),
-            themeMode: $("themeMode"),
-            run: $("run"), reset: $("reset"), downloadCsv: $("downloadCsv"),
-            sumBody: $("sumBody"), detailBlocks: $("detailBlocks"),
-            kpiFinalMargin: $("kpiFinalMargin"), kpiGross: $("kpiGross"),
-            kpiFees: $("kpiFees"), kpiNet: $("kpiNet"), kpiRecovery: $("kpiRecovery"),
-            totGross: $("totGross"), totFees: $("totFees"), totNet: $("totNet"), totFinal: $("totFinal"),
-            chartMonthly: $("chartMonthly"),
-            paramToggle: $("paramToggle"), paramsBody: $("paramsBody"),
-            optToggle: $("optToggle"), optsBody: $("optsBody"),
-            presetSlot:$("presetSlot"), presetSave:$("presetSave"), presetLoad:$("presetLoad"), presetDelete:$("presetDelete"),
-            presetMsg:$("presetMsg")
-          };
-          function postH(){ if(parent && parent.postMessage){ parent.postMessage({type:"tbs-iframe-height", h: document.documentElement.scrollHeight }, "*"); } }
-
-          /* 折りたたみ */
-          function setCollapsed(b){
-            els.paramsBody.style.display = b ? "none":"block";
-            els.paramToggle.setAttribute("aria-expanded", b ? "false":"true");
-            els.paramToggle.textContent = b ? "開く":"折りたたむ";
-            try{ const u=JSON.parse(localStorage.getItem(UIKEY)||"{}"); u.paramCollapsed=!!b; localStorage.setItem(UIKEY,JSON.stringify(u)); }catch(e){}
-            postH();
-          }
-          els.paramToggle.addEventListener("click", ()=>setCollapsed(els.paramsBody.style.display!=="none"));
-
-          function setOptCollapsed(b){
-            els.optsBody.style.display = b ? "none":"block";
-            els.optToggle.setAttribute("aria-expanded", b ? "false":"true");
-            els.optToggle.textContent = b ? "開く":"折りたたむ";
-            try{ const u=JSON.parse(localStorage.getItem(UIKEY)||"{}"); u.optsCollapsed=!!b; localStorage.setItem(UIKEY,JSON.stringify(u)); }catch(e){}
-            postH();
-          }
-          els.optToggle.addEventListener("click", ()=>setOptCollapsed(els.optsBody.style.display!=="none"));
-
-          (function restoreUI(){
-            try{
-              const u=JSON.parse(localStorage.getItem(UIKEY)||"{}");
-              setCollapsed(!!u.paramCollapsed);
-              setOptCollapsed(!!u.optsCollapsed);
-            }catch(e){ setCollapsed(false); setOptCollapsed(false); }
-          })();
-
-          /* 値の保存/復元 */
-          function save(){
-            const d={
-              initial:els.initial.value, cap:els.cap.value, bonusPct:els.bonusPct.value,
-              tradesPerMonth:els.tradesPerMonth.value, tpPct:els.tpPct.value,
-              reinvestPct:els.reinvestPct.value, months:els.months.value,
-              feePct:els.feePct.value, feeCap:els.feeCap.value, feeFixed: els.feeFixed.checked?"1":"0",
-              modePrincipal: els.modePrincipal.checked?"1":"0",
-              autoRecalc:   els.autoRecalc.checked?"1":"0",
-              themeMode:    els.themeMode.value||"auto"
-            };
-            localStorage.setItem(LSKEY, JSON.stringify(d));
-          }
-          function restore(){
-            const raw=localStorage.getItem(LSKEY); if(!raw) return;
-            try{
-              const d=JSON.parse(raw);
-              Object.keys(d).forEach(k=>{
-                if(k==="modePrincipal") els.modePrincipal.checked = d[k]==="1";
-                else if(k==="autoRecalc") els.autoRecalc.checked = d[k]==="1";
-                else if(k==="feeFixed")  els.feeFixed.checked   = d[k]==="1";
-                else if(els[k] && "value" in els[k]) els[k].value = d[k];
-              });
-            }catch(e){}
-          }
-          function bind(id){
-            const el=$(id); if(!el) return;
-            el.addEventListener("input", ()=>{ save(); if(els.autoRecalc.checked) calc(); });
-            el.addEventListener("change",()=>{ save(); if(els.autoRecalc.checked) calc(); });
-          }
-          ["initial","cap","bonusPct","tradesPerMonth","tpPct","reinvestPct","months","feePct","feeCap","feeFixed","modePrincipal","autoRecalc","themeMode"].forEach(bind);
-
-          /* テーマ */
-          function applyTheme(mode){ document.documentElement.classList.toggle("theme-dark", mode==="dark"); drawChart(lastRows||[]); postH(); }
-          els.themeMode.addEventListener("change", ()=>applyTheme(els.themeMode.value||"auto"));
-
-          /* feeFixed UI：チェック時は料率セレクトを薄く */
-          function updateFeeLockUI(){ 
-            const on = els.feeFixed && els.feeFixed.checked;
-            els.feePct.disabled = !!on;
-            els.feePct.style.opacity = on ? 0.6 : 1;
-          }
-          if(els.feeFixed){ els.feeFixed.addEventListener("change", updateFeeLockUI); }
-
-          /* チャート描画 */
-          function cssVar(n){ return getComputedStyle(document.documentElement).getPropertyValue(n).trim(); }
-          function drawChart(rows){
-            const cvs=els.chartMonthly, ctx=cvs.getContext("2d"), dpr=window.devicePixelRatio||1;
-            const W=cvs.clientWidth||600, H=260; cvs.width=W*dpr; cvs.height=H*dpr; ctx.setTransform(dpr,0,0,dpr,0,0);
-            ctx.clearRect(0,0,W,H);
-            const padL=44,padR=56,padT=14,padB=28, plotW=W-padL-padR, plotH=H-padT-padB;
-            const n=rows.length, labels=rows.map(r=>r.m), gross=rows.map(r=>r.monthGross), fees=rows.map(r=>r.fee), net=rows.map(r=>r.net), endM=rows.map(r=>r.endMargin);
-            const maxBar=Math.max(1,...gross,...fees,...net), maxLine=Math.max(1,...endM);
-            function yB(v){ return padT+plotH-(v/maxBar)*plotH; } function yL(v){ return padT+plotH-(v/maxLine)*plotH; }
-            ctx.strokeStyle="#cbd5e1"; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(padL,padT); ctx.lineTo(padL,padT+plotH); ctx.lineTo(padL+plotW,padT+plotH); ctx.stroke();
-            ctx.fillStyle=cssVar("--muted")||"#64748b"; ctx.font="11px system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial"; ctx.textAlign="right"; ctx.textBaseline="middle";
-            [0,0.5,1].forEach(p=>{ const y=padT+plotH-p*plotH; const v=Math.round(maxBar*p); ctx.fillText(v.toLocaleString("ja-JP"), padL-6, y); });
-            const band=plotW/Math.max(1,n), barW=Math.max(2, Math.min(18, band*0.22)), gap=barW*0.35;
-            for(let i=0;i<n;i++){
-              const cx=padL+band*i+band*0.5, y0=yB(0);
-              ctx.fillStyle=cssVar("--gross")||"#0ea5e9"; let y1=yB(gross[i]); ctx.fillRect(cx-(barW*1.1+gap), y1, barW, y0-y1);
-              ctx.fillStyle=cssVar("--fee")||"#f59e0b";   let y2=yB(fees[i]);  ctx.fillRect(cx-(barW*0+0),     y2, barW, y0-y2);
-              ctx.fillStyle=cssVar("--net")||"#10b981";   let y3=yB(net[i]);   ctx.fillRect(cx+(barW*1.1+gap), y3, barW, y0-y3);
-            }
-            ctx.strokeStyle=cssVar("--linechart")||"#ef4444"; ctx.lineWidth=2; ctx.beginPath();
-            for(let i=0;i<n;i++){ const x=padL+band*i+band*0.5, y=yL(endM[i]); if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y); } ctx.stroke();
-            ctx.fillStyle=cssVar("--muted")||"#64748b"; ctx.textAlign="center"; ctx.textBaseline="top";
-            for(let i=0;i<n;i++){ const x=padL+band*i+band*0.5; ctx.fillText(labels[i]+"月", x, padT+plotH+6); }
-          }
-
-          /* 計算（初回のみ元本回収） */
-          let lastRows=[];
-          function calc(){
-            const initial=+els.initial.value||0, cap=+els.cap.value||0;
-            const bonusPct=(+els.bonusPct.value||0)/100, tpPct=(+els.tpPct.value||0)/100, reinvest=(+els.reinvestPct.value||0)/100;
-            const trades=Math.max(1,+els.tradesPerMonth.value||1), months=Math.max(1,+els.months.value||1);
-            const feePct=(+els.feePct.value||0)/100, feeCap=+els.feeCap.value||0, feeFixed = !!(els.feeFixed && els.feeFixed.checked);
-            const principalMode=!!els.modePrincipal.checked, principalTarget= initial>0 ? initial*2 : Infinity;
-
-            let margin=initial|0, totalGross=0,totalFees=0,totalNet=0, recovered=0, didReset=false, resetMonth=null;
-            const monthRows=[], detailHTML=[];
-            for(let m=1;m<=months;m++){
-              const startMargin=margin; let monthGross=0; const rows=[];
-              for(let t=1;t<=trades;t++){
-                const before=margin, bonus=Math.round(before*bonusPct), effective=before+bonus;
-                const profit=Math.round(bonus*tpPct), add=Math.floor(profit*reinvest);
-                margin=Math.min(cap>0?cap:Infinity, margin+add);
-                monthGross+=profit;
-                rows.push('<tr><td>'+t+'</td><td>'+JPY(before)+'</td><td>'+Math.round(bonusPct*100)+'%</td><td>'+JPY(bonus)+'</td><td>'+JPY(effective)+'</td><td>'+JPY(profit)+'</td><td>'+JPY(add)+'</td><td>'+JPY(margin)+'</td></tr>');
-                if(principalMode && !didReset){
-                  recovered+=profit;
-                  if(initial>0 && recovered>=principalTarget){
-                    didReset=true; resetMonth=m; recovered=0; margin=Math.min(cap>0?cap:Infinity, initial|0);
-                    rows.push('<tr class="reset-row" id="resetAnchor"><td colspan="8">★ 元本回収達成 '+ JPY(principalTarget) +' → 初期証拠金 '+ JPY(initial) +' に戻して再スタート</td></tr>');
-                  }
-                }
-              }
-              // ★管理料計算：固定ONなら毎月 feeCap をそのまま適用、OFFは従来式
-              const fee = feeFixed ? feeCap : Math.min(feeCap>0?feeCap:Infinity, Math.round(monthGross*feePct));
-              const net=monthGross-fee; totalGross+=monthGross; totalFees+=fee; totalNet+=net;
-              monthRows.push({m, startMargin, trades, monthGross, fee, net, endMargin:margin});
-              detailHTML.push('<div class="card" style="margin-top:8px;"><div class="hd">'+m+'ヶ月目：利確内訳</div><div class="bd"><div class="tablewrap"><table><thead><tr><th>回</th><th>証拠金</th><th>ボーナス割合</th><th>ボーナス</th><th>有効証拠金</th><th>利確金額</th><th>再投資額</th><th>次回証拠金</th></tr></thead><tbody>'+rows.join("")+'</tbody></table></div></div></div>');
-            }
-
-            // テーブル・KPI
-            els.sumBody.innerHTML = monthRows.map(r=>'<tr><td>'+r.m+'</td><td>'+JPY(r.startMargin)+'</td><td>'+INT(r.trades)+'</td><td>'+JPY(r.monthGross)+'</td><td>'+JPY(r.fee)+'</td><td>'+JPY(r.net)+'</td><td>'+JPY(r.endMargin)+'</td></tr>').join('');
-            els.detailBlocks.innerHTML = detailHTML.join('');
-            els.kpiFinalMargin.textContent = JPY(monthRows.length?monthRows[monthRows.length-1].endMargin:0);
-            els.kpiGross.textContent = JPY(totalGross); els.kpiFees.textContent = JPY(totalFees); els.kpiNet.textContent = JPY(totalNet);
-            if(!principalMode){ els.kpiRecovery.textContent="モードOFF"; els.kpiRecovery.classList.remove("clickable"); els.kpiRecovery.removeAttribute("title"); }
-            else if(didReset){ els.kpiRecovery.textContent=resetMonth+"ヶ月目"; els.kpiRecovery.classList.add("clickable"); els.kpiRecovery.title="タップで回収行へ移動"; }
-            else{ els.kpiRecovery.textContent="未達成"; els.kpiRecovery.classList.remove("clickable"); els.kpiRecovery.removeAttribute("title"); }
-            els.totGross.textContent=JPY(totalGross); els.totFees.textContent=JPY(totalFees); els.totNet.textContent=JPY(totalNet); els.totFinal.textContent=JPY(monthRows.length?monthRows[monthRows.length-1].endMargin:0);
-
-            lastRows=monthRows; drawChart(monthRows); save(); postH();
-            return { monthRows };
-          }
-
-          function toCsv(data){
-            const lines=[["月","期首証拠金","月間利確回数","月粗利益","管理料","月ユーザー利益","期末証拠金"]];
-            data.monthRows.forEach(r=>lines.push([r.m,r.startMargin,r.trades,r.monthGross,r.fee,r.net,r.endMargin]));
-            return "\\uFEFF"+lines.map(r=>r.join(",")).join("\\n");
-          }
-
-          // KPIクリックで回収行へスクロール
-          $("kpiRecovery").addEventListener("click", ()=>{
-            if(!$("kpiRecovery").classList.contains("clickable")) return;
-            const det=$("detailsPanel"); if(det) det.open=true;
-            setTimeout(()=>{ const a=document.getElementById("resetAnchor"); if(a && a.scrollIntoView){ a.scrollIntoView({behavior:"smooth",block:"center"}); postH(); } },30);
-          });
-
-          /* プリセット機能（feeFixedも保存/読込対象） */
-          function msg(t){ if(els.presetMsg){ els.presetMsg.textContent=t||""; setTimeout(()=>{ if(els.presetMsg.textContent===t) els.presetMsg.textContent=""; },1600); } }
-          function grab(){ return {
-            initial:els.initial.value, cap:els.cap.value, bonusPct:els.bonusPct.value,
-            tradesPerMonth:els.tradesPerMonth.value, tpPct:els.tpPct.value, reinvestPct:els.reinvestPct.value,
-            months:els.months.value, feePct:els.feePct.value, feeCap:els.feeCap.value,
-            feeFixed: els.feeFixed.checked?"1":"0", modePrincipal:els.modePrincipal.checked?"1":"0"
-          }; }
-          function apply(p){ if(!p) return;
-            Object.keys(p).forEach(k=>{
-              if(k==="modePrincipal") els.modePrincipal.checked=p[k]==="1";
-              else if(k==="feeFixed")  els.feeFixed.checked=p[k]==="1";
-              else if(els[k] && "value" in els[k]) els[k].value=p[k];
-            });
-            updateFeeLockUI();
-          }
-          function allPresets(){ try{ return JSON.parse(localStorage.getItem(PREKEY)||"{}"); }catch(e){ return {}; } }
-          function savePresets(obj){ localStorage.setItem(PREKEY, JSON.stringify(obj)); }
-          function refreshChips(){
-            const all=allPresets();
-            Array.prototype.forEach.call(document.querySelectorAll("[data-quick]"), b=>{
-              const key="slot"+b.getAttribute("data-quick");
-              b.setAttribute("data-has", all[key] ? "1":"0");
-            });
-          }
-          function psave(n){ const all=allPresets(); all["slot"+n]=grab(); savePresets(all); refreshChips(); msg("スロット"+n+"に保存しました"); }
-          function pload(n){ const all=allPresets(), p=all["slot"+n]; if(!p){ msg("スロット"+n+"は空です"); return; } apply(p); save(); calc(); msg("スロット"+n+"を読込"); }
-          function pdel(n){ const all=allPresets(); const key="slot"+n; if(all[key]){ delete all[key]; savePresets(all); refreshChips(); msg("スロット"+n+"を削除しました"); } else { msg("スロット"+n+"は空です"); } }
-
-          $("presetSave").addEventListener("click", ()=>psave($("presetSlot").value));
-          $("presetLoad").addEventListener("click", ()=>pload($("presetSlot").value));
-          $("presetDelete").addEventListener("click", ()=>pdel($("presetSlot").value));
-          Array.prototype.forEach.call(document.querySelectorAll("[data-quick]"), b=>{
-            b.addEventListener("click", ()=>pload(b.getAttribute("data-quick")));
-          });
-
-          /* ボタン類 */
-          $("run").addEventListener("click", calc);
-          $("reset").addEventListener("click", ()=>{
-            if(!confirm("入力を初期値に戻しますか？")) return;
-            $("initial").value="100000"; $("cap").value="400000"; $("bonusPct").value="20"; $("tradesPerMonth").value="4";
-            $("tpPct").value="70"; $("reinvestPct").value="50"; $("months").value="12";
-            $("feePct").value="30"; $("feeCap").value="29800"; $("feeFixed").checked=false;
-            $("modePrincipal").checked=false; $("autoRecalc").checked=false;
-            const prev=JSON.parse(localStorage.getItem(LSKEY)||"{}"); const tm=prev.themeMode||"auto";
-            localStorage.setItem(LSKEY, JSON.stringify({
-              initial:"100000",cap:"400000",bonusPct:"20",tradesPerMonth:"4",tpPct:"70",reinvestPct:"50",
-              months:"12",feePct:"30",feeCap:"29800",feeFixed:"0",modePrincipal:"0",autoRecalc:"0",themeMode:tm
-            }));
-            $("sumBody").innerHTML='<tr><td colspan="7" style="text-align:center;">「計算する」を押してください</td></tr>'; $("detailBlocks").innerHTML="";
-            ["kpiFinalMargin","kpiGross","kpiFees","kpiNet","kpiRecovery","totGross","totFees","totNet","totFinal"].forEach(id=>$(id).textContent="-");
-            updateFeeLockUI(); drawChart([]); postH();
-          });
-          $("downloadCsv").addEventListener("click", ()=>{
-            const data=calc(); const csv=toCsv(data); const blob=new Blob([csv],{type:"text/csv;charset=utf-8;"}); const url=URL.createObjectURL(blob);
-            const a=document.createElement("a"); const ts=new Date().toISOString().slice(0,19).replace(/[:T]/g,"-"); a.href=url; a.download='tombosh_fx_sim_'+ts+'.csv'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
-          });
-
-          /* 初期化 */
-          restore();
-          const th=(JSON.parse(localStorage.getItem(LSKEY)||"{}").themeMode)||"auto"; $("themeMode").value=th; document.documentElement.classList.toggle("theme-dark", th==="dark");
-          refreshChips();
-          updateFeeLockUI();
-          calc();
-
-          new MutationObserver(()=>postH()).observe(document.documentElement,{subtree:true,childList:true,attributes:true});
-          window.addEventListener("resize", ()=>{ drawChart(lastRows||[]); postH(); }, {passive:true});
-        })();
-      `;
-
-      var s = doc.createElement('script');
-      s.textContent = js;
-      doc.body.appendChild(s);
-
-      function setH(h){ if(typeof h === 'number' && h > 0){ iframe.style.height = (h+10) + 'px'; } }
-      function measure(){ try{ var d=iframe.contentDocument||iframe.contentWindow.document; setH(d.documentElement.scrollHeight||d.body.scrollHeight||800);}catch(e){ iframe.style.height='1000px'; } }
-      setTimeout(measure, 120);
-      window.addEventListener('message', function(ev){ if(ev && ev.data && ev.data.type==='tbs-iframe-height'){ setH(ev.data.h); }});
-      window.addEventListener('resize', measure, {passive:true});
-    })();
-  </script>
-</div>
