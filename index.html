@@ -166,7 +166,10 @@
               <input id="feeCap" type="number" inputmode="numeric" min="0" step="100" value="33000">
             </div>
           </div>
-
+ <div class="opt-row">
+              <input id="modePrincipal" type="checkbox">
+              <label for="modePrincipal" style="margin:0;">元本回収モード（<strong>初期証拠金×2 回収後に初期証拠金へリセット</strong>）</label>
+            </div>
           <div class="actions" style="margin-top:6px;">
             <button id="run">計算する</button>
             <button id="reset" class="secondary" type="button">入力リセット</button>
@@ -186,10 +189,6 @@
         </div>
         <div class="bd" id="optsBody">
           <div class="opt-grid">
-            <div class="opt-row">
-              <input id="modePrincipal" type="checkbox">
-              <label for="modePrincipal" style="margin:0;">元本回収モード（<strong>初期証拠金×2 回収後に初期証拠金へリセット</strong>）</label>
-            </div>
             <div class="opt-row">
               <input id="autoRecalc" type="checkbox"><label for="autoRecalc" style="margin:0;">自動再計算</label>
             </div>
